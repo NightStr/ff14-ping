@@ -100,7 +100,7 @@ fn main() {
         let pid = match find_process_pids("ffxiv_dx11") {
             Some(pid) => pid,
             None => {
-                display_result(&"Процесс не найден");
+                display_result(&format!("{}\n\nПроцесс не найден", ping_results));
                 thread::sleep(sleep_duration);
                 continue;
             }
@@ -108,7 +108,7 @@ fn main() {
         match find_game_servers(&pid) {
             Some(ip) => ping_results.set_ip(ip),
             None => {
-                display_result(&"Отсутствует подключение к серверу игры");
+                display_result(&format!("{}\n\nОтсутствует подключение к серверу игры", ping_results));
                 thread::sleep(sleep_duration);
                 continue;
             }
@@ -139,7 +139,7 @@ fn find_game_servers(pid: &u32) -> Option<String> {
         .filter(|socket_info| socket_info.associated_pids.contains(pid))
         .filter_map(|si| {
             if let ProtocolSocketInfo::Tcp(tcp_si) = si.protocol_socket_info {
-                Some(tcp_si.remote_addr.to_string()) // Берём remote_addr
+                Some(tcp_si.remote_addr.to_string())
             } else {
                 None
             }
