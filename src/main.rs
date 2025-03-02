@@ -105,15 +105,14 @@ fn main() {
                 continue;
             }
         };
-        let ip = match find_game_servers(&pid) {
-            Some(ip) => ip,
+        match find_game_servers(&pid) {
+            Some(ip) => ping_results.set_ip(ip),
             None => {
                 display_result(&"Отсутствует подключение к серверу игры");
                 thread::sleep(sleep_duration);
                 continue;
             }
         };
-        ping_results.set_ip(ip);
         match check_ping(ping_results.ip.parse().unwrap()) {
             Some(ping) => ping_results.update_ping(ping),
             None => ping_results.update_error(),
