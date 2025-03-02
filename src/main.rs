@@ -114,7 +114,10 @@ fn main() {
             }
         };
         ping_results.set_ip(ip);
-        ping_results = check_ping(ping_results);
+        match check_ping(ping_results.ip.parse().unwrap()) {
+            Some(ping) => ping_results.update_ping(ping),
+            None => ping_results.update_error(),
+        };
         display_result(&ping_results);
         thread::sleep(sleep_duration);
     }
@@ -132,7 +135,6 @@ fn find_process_pids(name: &str) -> Option<u32> {
 
 fn find_game_servers(pid: &u32) -> Option<String> {
     let sockets_info = get_sockets_info(AddressFamilyFlags::IPV4, ProtocolFlags::TCP).unwrap();
-    
     sockets_info
         .into_iter()
         .filter(|socket_info| socket_info.associated_pids.contains(pid))
@@ -145,14 +147,13 @@ fn find_game_servers(pid: &u32) -> Option<String> {
         }).next()
 }
 
-fn check_ping(mut ping_result: PingResult) -> PingResult {
+fn check_ping(dst: core::net::IpAddr) -> Option<u32> {
     let pinger = Pinger::new().unwrap();
     let mut buffer = Buffer::new();
-    match pinger.send(ping_result.ip.parse().unwrap(), &mut buffer) {
-        Ok(rtt) => ping_result.update_ping(rtt),
-        Err(_) => ping_result.update_error(),
-    };
-    ping_result
+    match pinger.send(dst, &mut buffer) {
+        Ok(rtt) => Some(rtt),
+        Err(_) => None,
+    }
 }
 
 fn display_result(text: &dyn std::fmt::Display) {
