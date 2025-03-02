@@ -123,16 +123,11 @@ fn main() {
 fn find_process_pids(name: &str) -> Option<u32> {
     let mut sys = System::new_all();
     sys.refresh_all();
-    let pids: Vec<u32> = sys.processes()
-        .values()
-        .filter(|proc| proc.name().to_lowercase().contains(name))
-        .map(|proc| proc.pid().as_u32())
-        .collect();
-    if pids.is_empty() {
-        None
-    } else {
-        Some(pids[0])
-    }
+    sys.processes()
+    .values()
+    .filter(|proc| proc.name().to_lowercase().contains(name))
+    .map(|proc| proc.pid().as_u32())
+    .next()
 }
 
 fn find_game_servers(pid: &u32) -> Option<String> {
@@ -147,7 +142,7 @@ fn find_game_servers(pid: &u32) -> Option<String> {
             } else {
                 None
             }
-        }).collect::<Vec<String>>().get(0).cloned()
+        }).next()
 }
 
 fn check_ping(mut ping_result: PingResult) -> PingResult {
